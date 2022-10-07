@@ -1,8 +1,8 @@
 # Cisco xRV9k Virtual Router Automation 
 
-This is a solution for deploying Cisco XRV9K virtual routers to be used in an overlay. The solution will provision a single vRouter with dynamic connectivity
-to subnets based on subnet tags. The router interface configuration will be injected at initial boot so that interfaces are configured to the tagged subnets
-discovered by a Lambda Function.
+This is a solution for deploying Cisco XRV9K virtual routers to be used in an overlay. The solution will provision a single vRouter with dynamic
+connectivity to subnets based on subnet tags. The router interface configuration will be injected at initial boot so that interfaces are configured 
+to the tagged subnets discovered by a Lambda Function.
 
 # Dependencies:
 - An S3 bucket to stage lambda coded
@@ -67,8 +67,13 @@ In order for Lambda Automation to dynamically attach to subnets the following su
   * PgName - Optional name of pre-existing placement group 
   * InstanceTypeParam - Instance type to use. Please reference below table for appropriate selection. Modify select list as needed
 
-# Instnace Type Selection 
-As deploying virtual routers is expected to have multiple interfaces and varying throughput requirements for production deployments, please be sure to select an instance type that meets your required number of interfaces and speed requirements. Below is a general reference of interface properties for common instance types. For production deployments it is recommended to disable HyperThreading on the instance deployment. The Cloudformation has Hyperthreading enabled to accomodate variable instnace types but commented out section for CPUOptions is there if standardizing on a common instance type.
+# Instance Type Selection 
+
+As deploying virtual routers is expected to have multiple interfaces and varying throughput requirements for production deployments, please be sure to
+select an instance type that meets your required number of interfaces and speed requirements. Below is a general reference of interface properties for
+common instance types. For production deployments it is recommended to disable HyperThreading on the instance deployment. The Cloudformation has
+Hyperthreading enabled to accomodate variable instnace types but commented out section for CPUOptions is there if standardizing on a common instance type.
+
 ---------------------------------------------
 |           DescribeInstanceTypes           |
 +--------+-------------------+--------------+
