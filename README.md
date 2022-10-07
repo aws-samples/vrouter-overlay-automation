@@ -74,61 +74,57 @@ select an instance type that meets your required number of interfaces and speed 
 common instance types. For production deployments it is recommended to disable HyperThreading on the instance deployment. The Cloudformation has
 Hyperthreading enabled to accomodate variable instnace types but commented out section for CPUOptions is there if standardizing on a common instance type.
 
----------------------------------------------
-|           DescribeInstanceTypes           |
-+--------+-------------------+--------------+
-| MaxENI |     MaxSpeed      |    Type      |
-+--------+-------------------+--------------+
-|  2     |  Low to Moderate  |  t2.nano     |
-|  2     |  Low to Moderate  |  t2.micro    |
-|  3     |  Low to Moderate  |  t2.small    |
-|  3     |  Low to Moderate  |  t2.medium   |
-|  3     |  Low to Moderate  |  t2.large    |
-|  3     |  Moderate         |  t2.xlarge   |
-|  3     |  Moderate         |  t2.2xlarge  |
-|  2     |  Up to 5 Gigabit  |  t3.nano     |
-|  2     |  Up to 5 Gigabit  |  t3.micro    |
-|  3     |  Up to 5 Gigabit  |  t3.small    |
-|  3     |  Up to 5 Gigabit  |  t3.medium   |
-|  3     |  Up to 5 Gigabit  |  t3.small    |
-|  3     |  Up to 5 Gigabit  |  t3.large    |
-|  4     |  Up to 5 Gigabit  |  t3.xlarge   |
-|  4     |  Up to 5 Gigabit  |  t3.2xlarge  |
-|  3     |  Up to 10 Gigabit |  c5.large    |
-|  4     |  Up to 10 Gigabit |  c5.xlarge   |
-|  4     |  Up to 10 Gigabit |  c5.2xlarge  |
-|  8     |  Up to 10 Gigabit |  c5.4xlarge  |
-|  8     |  10 Gigabit       |  c5.9xlarge  |
-|  8     |  12 Gigabit       |  c5.12xlarge |
-|  15    |  25 Gigabit       |  c5.18xlarge |
-|  15    |  25 Gigabit       |  c5.24xlarge |
-|  15    |  25 Gigabit       |  c5.metal    |
-|  3     |  Up to 25 Gigabit |  c5n.large   |
-|  4     |  Up to 25 Gigabit |  c5n.xlarge  |
-|  4     |  Up to 25 Gigabit |  c5n.2xlarge |
-|  8     |  Up to 25 Gigabit |  c5n.4xlarge |
-|  8     |  50 Gigabit       |  c5n.9xlarge |
-|  15    |  100 Gigabit      |  c5n.18xlarge|
-|  15    |  100 Gigabit      |  c5n.metal   |
-|  3     |  Up to 10 Gigabit |  m5.large    |
-|  4     |  Up to 10 Gigabit |  m5.xlarge   |
-|  4     |  Up to 10 Gigabit |  m5.2xlarge  |
-|  8     |  Up to 10 Gigabit |  m5.4xlarge  |
-|  8     |  10 Gigabit       |  m5.8xlarge  |
-|  8     |  10 Gigabit       |  m5.12xlarge |
-|  15    |  20 Gigabit       |  m5.16xlarge |
-|  15    |  25 Gigabit       |  m5.24xlarge |
-|  15    |  25 Gigabit       |  m5.metal    |
-|  3     |  Up to 25 Gigabit |  m5n.large   |
-|  4     |  Up to 25 Gigabit |  m5n.xlarge  |
-|  4     |  Up to 25 Gigabit |  m5n.2xlarge |
-|  8     |  Up to 25 Gigabit |  m5n.4xlarge |
-|  8     |  25 Gigabit       |  m5n.8xlarge |
-|  8     |  50 Gigabit       |  m5n.12xlarge|
-|  15    |  75 Gigabit       |  m5n.16xlarge|
-|  15    |  100 Gigabit      |  m5n.24xlarge|
-|  15    |  100 Gigabit      |  m5n.metal   |
-+--------+-------------------+--------------+
+MaxENI | MaxSpeed | Type     
+--- | --- | ---
+2 | Low to Moderate | t2.nano 
+2 | Low to Moderate | t2.micro
+3 | Low to Moderate | t2.small
+3 | Low to Moderate | t2.medium
+3 | Low to Moderate | t2.large
+3 | Moderate | t2.xlarge
+3 | Moderate | t2.2xlarge
+2 | Up to 5 Gigabit | t3.nano
+2 | Up to 5 Gigabit | t3.micro
+3 | Up to 5 Gigabit | t3.small
+3 | Up to 5 Gigabit | t3.medium
+3 | Up to 5 Gigabit | t3.small
+3 | Up to 5 Gigabit | t3.large
+4 | Up to 5 Gigabit | t3.xlarge
+4 | Up to 5 Gigabit | t3.2xlarge
+3 | Up to 10 Gigabit | c5.large
+4 | Up to 10 Gigabit | c5.xlarge
+4 | Up to 10 Gigabit | c5.2xlarge
+8 | Up to 10 Gigabit | c5.4xlarge
+8 | 10 Gigabit | c5.9xlarge
+8 | 12 Gigabit | c5.12xlarge
+15 | 25 Gigabit | c5.18xlarge
+15 | 25 Gigabit | c5.24xlarge
+15 | 25 Gigabit | c5.metal
+3 | Up to 25 Gigabit | c5n.large
+4 | Up to 25 Gigabit | c5n.xlarge
+4 | Up to 25 Gigabit | c5n.2xlarge
+8 | Up to 25 Gigabit | c5n.4xlarge
+8 | 50 Gigabit | c5n.9xlarge
+15 | 100 Gigabit | c5n.18xlarge
+15 | 100 Gigabit | c5n.metal
+3 | Up to 10 Gigabit | m5.large
+4 | Up to 10 Gigabit | m5.xlarge
+4 | Up to 10 Gigabit | m5.2xlarge
+8 | Up to 10 Gigabit | m5.4xlarge
+8 | 10 Gigabit | m5.8xlarge
+8 | 10 Gigabit | m5.12xlarge
+15 | 20 Gigabit | m5.16xlarge
+15 | 25 Gigabit | m5.24xlarge
+15 | 25 Gigabit | m5.metal
+3 | Up to 25 Gigabit | m5n.large
+4 | Up to 25 Gigabit | m5n.xlarge
+4 | Up to 25 Gigabit | m5n.2xlarge
+8 | Up to 25 Gigabit | m5n.4xlarge
+8 | 25 Gigabit | m5n.8xlarge
+8 | 50 Gigabit | m5n.12xlarge
+15 | 75 Gigabit | m5n.16xlarge
+15 | 100 Gigabit | m5n.24xlarge
+15 | 100 Gigabit | m5n.metal 
 
 ## Security
 
