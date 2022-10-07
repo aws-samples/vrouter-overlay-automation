@@ -22,15 +22,6 @@ In order for Lambda Automation to dynamically attach to subnets the following su
 	If BGPvRouter=no it is assumed both routers are attaching to same subnet and IP assignments are as follows. Last IP in subnet is assigned as Gateway for clients, 2nd to last assigned
 	to first(Primary) router instance and 3rd to last IP assigned to second(Secondary) vrouter instancs as defined by the vRouterInstance cloudformation parameter. 
 - subnetName: String value for description of subnets to be applied inside router configuration. 
-
-# Installation
-
-## Build and stage Lambda functions
-1. cd lambda
-2. ./build.sh - will build lambda function packages from src
-3. aws s3 cp GetIps.zip s3://YOURBUCKETNAMEHERE/
-4. aws s3 cp vRouterInterfaces.zip s3://YOURBUCKETNAMEHERE/
-5. aws cloudformation create-stack --stack-name vRouter-Lambdas --template-body file://./lambda_deployment.yaml --parameters ParameterKey=pS3LambdaBucket,ParameterValue=YOURBUCKETNAMEHERE --capabilities CAPABILITY_IAM
  
 # Key Files:
 - cfn/vRouter.yaml - vRouter Instance Cloudformation template 
@@ -41,6 +32,15 @@ In order for Lambda Automation to dynamically attach to subnets the following su
 - lambda_deployment.yaml - Cloudformation to deploy lambda functions and required roles
 - lambda/GetIps/src/index.py - GetIP function source
 - lambda/vRouterInterfaces/src/index.py - vRouterInterfaces function source
+
+# Installation
+
+## Build and stage Lambda functions
+1. cd lambda
+2. ./build.sh - will build lambda function packages from src
+3. aws s3 cp GetIps.zip s3://YOURBUCKETNAMEHERE/
+4. aws s3 cp vRouterInterfaces.zip s3://YOURBUCKETNAMEHERE/
+5. aws cloudformation create-stack --stack-name vRouter-Lambdas --template-body file://./lambda_deployment.yaml --parameters ParameterKey=pS3LambdaBucket,ParameterValue=YOURBUCKETNAMEHERE --capabilities CAPABILITY_IAM
 
 # Cloudformation Execution 
 1. Configure paramters in vRouter-SecurityGroup-Sample-Confg.json for Overlay security group
