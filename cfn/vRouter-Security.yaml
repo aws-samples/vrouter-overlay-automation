@@ -1,0 +1,111 @@
+#######################################################################################
+# Copyright 2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.              #
+#                                                                                      #
+# Permission is hereby granted, free of charge, to any person obtaining a copy of this #
+# software and associated documentation files (the "Software"), to deal in the Software#
+# without restriction, including without limitation the rights to use, copy, modify,   #
+# merge, publish, distribute, sublicense, and/or sell copies of the Software, and to   #
+# permit persons to whom the Software is furnished to do so.                           #
+#                                                                                      #
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,  #
+# INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A        #
+# PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT   #
+# HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION    #
+# OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE       #
+# SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                               #
+########################################################################################
+Description: 'This is a sample, non-production-ready template that deploys a security group for Cisco XRv9k
+  (c) 2021 Amazon Web Services, Inc. or its affiliates. All Rights Reserved. This AWS Content is provided
+  subject to the terms of the AWS Customer Agreement available at http://aws.amazon.com/agreement
+  or other written agreement between Customer and Amazon Web Services, Inc.'
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      -
+        Label:
+          default: "vRouter Security Group Properties"
+        Parameters:
+          - Environment
+
+Parameters:
+  Environment:
+    Description: Environment lifecycle tag to attach to resources described by this template.
+    Type: String
+    AllowedValues:
+      - 'd'
+      - 't'
+      - 'i'
+      - 'p'
+
+  VPC:
+    Description: VPC ID for deployment 
+    Type: String
+
+  OverlayName:
+    Description: Unique Overlay Deployment Name 
+    Type: String
+    ConstraintDescription: Must be a valid selection.
+
+Conditions:
+  IsProd: !Equals [!Ref Environment, p]
+
+Resources:
+  vRouterSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Join
+       - ''
+       - - 'SG-CS-vRTR-'
+         - !Ref OverlayName
+         - '-overlay'
+      GroupDescription: !Join
+       - ''
+       - - 'SG-CS-vRTR-'
+         - !Ref OverlayName
+         - '-overlay'
+      VpcId: !Ref VPC
+      SecurityGroupIngress: # Static entries #
+        - IpProtocol: udp
+          FromPort: 3784
+          ToPort: 3784
+          CidrIp:  !If [IsProd, 10.0.0.0/8, 172.16.0.0/12]
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp:  !If [IsProd, 10.0.0.0/8, 172.16.0.0/12]
+        - IpProtocol: udp
+          FromPort: 3785
+          ToPort: 3785
+          CidrIp:  !If [IsProd, 10.0.0.0/8, 172.16.0.0/12]
+        - IpProtocol: 47
+          FromPort: 1723
+          ToPort: 1723
+          CidrIp:  !If [IsProd, 10.0.0.0/8, 172.16.0.0/12]
+        - IpProtocol: tcp
+          FromPort: 179
+          ToPort: 179
+          CidrIp:  !If [IsProd, 10.0.0.0/8, 172.16.0.0/12]
+        - IpProtocol: icmp
+          FromPort: -1
+          ToPort: -1
+          CidrIp:  !If [IsProd, 10.0.0.0/8, 172.16.0.0/12]
+        - IpProtocol: -1
+          FromPort: -1
+          ToPort: -1
+          CidrIp:  !If [IsProd, 10.0.0.0/8, 172.16.0.0/12]
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: !Join
+           - ''
+           - - 'SG-CS-vRTR-'
+             - !Ref OverlayName 
+             - '-overlay'
+
+Outputs:
+  vRouterSecurityGroup:
+    Description: vRouter Security Group 
+    Value: !Ref vRouterSecurityGroup 

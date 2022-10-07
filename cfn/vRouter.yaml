@@ -1,0 +1,497 @@
+---
+########################################################################################
+# Copyright 2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.              #
+#                                                                                      #
+# Permission is hereby granted, free of charge, to any person obtaining a copy of this #
+# software and associated documentation files (the "Software"), to deal in the Software#
+# without restriction, including without limitation the rights to use, copy, modify,   #
+# merge, publish, distribute, sublicense, and/or sell copies of the Software, and to   #
+# permit persons to whom the Software is furnished to do so.                           #
+#                                                                                      #
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,  #
+# INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A        #
+# PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT   #
+# HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION    #
+# OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE       #
+# SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                               #
+########################################################################################
+Description: 'This is a sample, non-production-ready template that deploys a Cisco XRv9k Overlay vRouter
+  (c) 2021 Amazon Web Services, Inc. or its affiliates. All Rights Reserved. This AWS Content is provided
+  subject to the terms of the AWS Customer Agreement available at http://aws.amazon.com/agreement
+  or other written agreement between Customer and Amazon Web Services, Inc.'
+Transform: vRouterInterfaces
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      -
+        Label:
+          default: "vRouter Properties"
+        Parameters:
+          - vRouterName
+          - Environment
+          - DataCenterType
+          - vRouterInstance
+          - PgName
+          - VPC
+          - KeyName
+          - SecurityGroupID
+          - ImageID
+          - Loghost
+          - InstanceTypeParam
+      -
+        Label:
+          default: "Network Configuration"
+        Parameters:
+          - SubnetUnderlay
+          - LoopBackAddress
+          - ISISNetID
+          - PrefixSidIndex
+
+Parameters:
+  VPC:
+    Description: Select VPC Target 
+    Type: 'AWS::EC2::VPC::Id'
+  InstanceTypeParam:
+    Description: Instance Type for vRouter
+    Type: String
+    Default: t3.micro
+    AllowedValues:
+    - t3.micro
+    - t3.small
+    - t3.medium
+    - t3.large
+    - t3.xlarge
+    - t3.2xlarge
+    - c5.large
+    - c5.xlarge
+    - c5.2xlarge
+    - c5.4xlarge
+    - c5.24xlarge
+    - m5.large
+    - m5.xlarge
+    - m5.2xlarge
+    - m5.4xlarge
+    - m5.24xlarge
+  LoopBackAddress:
+    Type: String
+    Description: GRE0 Loopback Address
+    Default: 10.255.3.255
+  SecurityGroupID:
+    Type: 'AWS::EC2::SecurityGroup::Id' 
+    Description: Security Group for Overlay Connectivity
+  ImageID:
+    Type: String
+    Description: Custom AMI Id to Use
+    Default: default
+  Loghost:
+    Type: String
+    Description: NDC Jumpserver Loghost Address
+  PrefixSidIndex:
+    Type: String
+    Description: Loopback0 Interface Prefix Sid Index
+    Default: 255
+  ISISNetID:
+    Type: String
+    Description: IS-IS Net ID
+    Default: 49.0101.0102.5500.3255.00
+  vRouterName:
+    Type: String
+    Description: What is hostname of vRouter?
+  PgName:
+    Type: String
+    Description: Name of Placement Group to Use? (Router pairs should use same group name.)
+    Default: "none"
+  vRouterInstance:
+    Type: String
+    Description: Is this Primary or Secondary vRouter Instance? (Primary or Secondary)
+    AllowedValues:
+      - "Primary"
+      - "Secondary"
+    Default: "Primary"
+
+  DataCenterType:
+    Description: DataCenter Type based off AWS Data Center classification Region(r), Local Zone(l), Outpost(o)
+    Type: String
+    AllowedValues:
+    - 'r'
+    - 'l'
+    - 'o'
+
+  Environment:
+    AllowedValues:
+      - 'd'
+      - 't'
+      - 'i'
+      - 'r'
+      - 'p'
+    Description: Environment tag to attach to resources described by this template.
+    Type: String
+  SubnetUnderlay:
+    Description: Select vRouter Subnet for Primary GRE Tunnel Interface.
+    Type: 'AWS::EC2::Subnet::Id'
+  KeyName:
+    Type: 'AWS::EC2::KeyPair::KeyName'
+    Description: KeyPair Name for vRouter Instance
+
+Mappings:
+  AWSInstanceType2Arch:
+    m5n.24xlarge:
+      Arch: '64'
+    m5.24xlarge:
+      Arch: '64'
+
+  # These values need updated with your own AMIs as XRV images are not public.  Unless updated uses ImageID parameter
+  AWSRegionArch2AMI:
+    us-west-2:
+      '64': 'ami-04fae406a1ed56410'
+    us-east-2:
+      '64': 'ami-03a8d707ff85c36a1'
+    us-east-1:
+      '64': 'ami-0c0bfbdca83f86d93'
+    us-west-1:
+      '64': 'ami-070b34be4c574af77'
+      
+  # This can be used for production deployments to autoselect a standard value. Below accounts for differences 
+  # between Regional, Local Zone or Outpost based differenes in available instnace types. 
+  DCTypeToInstanceType:
+    r:
+      InstanceType: m5n.24xlarge
+    l:
+      InstanceType: m5.24xlarge
+    o:
+      InstanceType: m5.24xlarge
+
+Conditions:
+  IsPrimary: !Equals [!Ref vRouterInstance, Primary]
+  IsSecondary: !Equals [!Ref vRouterInstance, Secondary]
+  IsProd: !Equals [!Ref Environment, p]
+  IsRegion: !Equals [!Ref DataCenterType, r]
+  CustomAMI: !Equals [!Ref ImageID, default]
+  IsPlacementGroup: !Not [!Equals [ !Ref PgName, 'none' ]]
+
+Resources:
+  rCustomSubnetUnderlay:
+    Type: Custom::LastThree
+    Properties:
+      ServiceToken: '{{resolve:ssm:/automation/GetIps/lambdaArn}}'
+      SubnetId: !Ref SubnetUnderlay
+      PrimaryRouter: !If [IsPrimary, true, false]
+
+  vRTRGRE00:
+    Type: 'AWS::EC2::NetworkInterface'
+    Properties:
+      SubnetId: !Ref SubnetUnderlay
+      PrivateIpAddresses:
+      - PrivateIpAddress: !GetAtt rCustomSubnetUnderlay.FloatingIp
+        Primary: True
+      - PrivateIpAddress: !GetAtt rCustomSubnetUnderlay.PrimaryIp
+        Primary: False
+      - PrivateIpAddress: !GetAtt rCustomSubnetUnderlay.SecondaryIp
+        Primary: False
+      - PrivateIpAddress: !GetAtt rCustomSubnetUnderlay.Secondary4
+        Primary: False
+      - PrivateIpAddress: !GetAtt rCustomSubnetUnderlay.Secondary5
+        Primary: False
+      - PrivateIpAddress: !GetAtt rCustomSubnetUnderlay.Secondary6
+        Primary: False
+      - PrivateIpAddress: !GetAtt rCustomSubnetUnderlay.Secondary7
+        Primary: False
+      - PrivateIpAddress: !GetAtt rCustomSubnetUnderlay.Secondary8
+        Primary: False
+      Description: !Sub INT-RTR-${vRouterName}
+      Tags:
+        - Key: Name
+          Value: !Sub INT-RTR-${vRouterName}
+      GroupSet:
+        - !Ref SecurityGroupID
+      SourceDestCheck: 'false'
+
+  vRTRInstance:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Ref vRouterName
+        - Key: vRouterInstanceType
+          Value: !Ref vRouterInstance
+      #InstanceType: !FindInMap
+      #  - DCTypeToInstanceType
+      #  - !Ref DataCenterType
+      #  - InstanceType
+      InstanceType: !Ref InstanceTypeParam
+      KeyName: !Ref KeyName
+      NetworkInterfaces:
+        - NetworkInterfaceId: !Ref vRTRGRE00
+          DeviceIndex: '0'
+      BlockDeviceMappings:
+        - Fn::If:
+          - IsRegion
+          - DeviceName: /dev/xvda
+            Ebs:
+              VolumeType: gp3
+              VolumeSize: '64'
+              DeleteOnTermination: True
+              Encrypted: False
+          - DeviceName: /dev/xvda
+            Ebs:
+              VolumeType: gp2
+              VolumeSize: '64'
+              DeleteOnTermination: True
+              Encrypted: False
+      EbsOptimized: True
+      PlacementGroupName: !If [ IsPlacementGroup, !Ref PgName, !Ref 'AWS::NoValue' ]
+      #
+      # Recomendation for production implementation is to disable Hyperthreading to maximize PPS throughput 
+      # If standardizing on single instance type use below configuration to disable hyperthreading such example for m5.24xlarge below
+      #CpuOptions:  
+      #  CoreCount: 48 
+      #  ThreadsPerCore: 1
+      ImageId:
+        Fn::If:
+          - CustomAMI
+          - !FindInMap
+            - AWSRegionArch2AMI
+            - !Ref 'AWS::Region'
+            - !FindInMap
+              - AWSInstanceType2Arch
+              - !FindInMap
+                - DCTypeToInstanceType
+                - !Ref DataCenterType
+                - InstanceType
+              - Arch
+          - !Ref ImageID
+      UserData:
+       Fn::Base64:
+        !Sub |-
+          hostname ${vRouterName}
+          clock timezone UTC UTC
+          !
+          banner motd
+          !
+          banner login &
+          **************************************************************************
+          WARNING: If you are not authorized to access this system, disconnect now!
+                        YOU SHOULD HAVE NO EXPECTATION OF PRIVACY.
+                    By continuing, you consent to your keystrokes
+                            and data content being monitored.
+                      Access is restricted to authorized users only.
+                  Unauthorized access is a violation of state and federal,
+                  civil and criminal laws. Violations will be prosecuted to
+                      the fullest extent of the law with no exceptions.
+          **************************************************************************
+          &
+          !
+          logging source-interface TenGigE0/0/0/0
+          logging ${Loghost} vrf default port default 
+          service timestamps log datetime localtime msec show-timezone
+          service timestamps log uptime
+          service timestamps debug datetime localtime msec show-timezone
+          domain name aws-demo.net
+          domain lookup disable
+          domain name-server 169.254.169.253
+          domain lookup source-interface TenGigE0/0/0/0
+          !
+          username aws_build
+           group root-lr
+           group cisco-support
+           secret 5 $1$EF9D$0j14JiXIMusYWb.07wMpn0
+          !
+          vrf MEDIA
+           address-family ipv4 unicast
+            import route-target
+             398378:201
+            !
+            export route-target
+             398378:201
+            !
+           !
+          !
+          vrf ACCESS
+           address-family ipv4 unicast
+            import route-target
+             398378:220
+            !
+            export route-target
+             398378:220
+            !
+           !
+          !
+           !
+          !
+          vrf SERVICE
+           address-family ipv4 unicast
+            import route-target
+             398378:342
+            !
+            export route-target
+             398378:342
+            !
+           !
+          !
+          segment-routing
+           global-block 16000 80000
+           traffic-eng
+            logging
+             policy status
+            !
+           !
+          !
+          TCP path-mtu-discovery
+          !
+          tcp selective-ack
+          !
+          crypto key generate rsa
+          ssh server v2
+          ssh server vrf default
+          !
+          xml agent tty
+          netconf agent tty
+          netconf-yang agent ssh
+          logging console disable
+          logging history notifications
+          logging monitor informational
+          logging trap debugging
+          logging buffered 125000000
+          logging buffered debugging
+          logging events link-status software-interfaces
+          logging events display-location
+          no logging events link-status disable
+          !
+          ntp
+           server 169.254.169.123 prefer
+           access-group ipv4 peer NTP-ACL
+           source TenGigE0/0/0/0
+           update-calendar
+          !
+          ipv4 access-list NTP-ACL
+           remark NTP Server(s)
+           10 permit 169.254.169.123
+          !
+          snmp-server ifindex persist
+          snmp-server ifmib stats cache
+          snmp-server community AWSDEMO RO
+          snmp-server community AWSDEMO RO SystemOwner
+          snmp-server traps ntp
+          snmp-server traps copy-complete
+          snmp-server traps snmp
+          snmp-server traps snmp linkup
+          snmp-server traps snmp linkdown
+          snmp-server traps snmp coldstart
+          snmp-server traps snmp warmstart
+          snmp-server traps snmp authentication
+          snmp-server traps flash removal
+          snmp-server traps flash insertion
+          snmp-server traps config
+          snmp-server traps entity
+          snmp-server traps frequency synchronization
+          snmp-server traps l2vpn all
+          snmp-server traps mpls l3vpn all
+          snmp-server traps power
+          snmp-server traps selective-vrf-download role-change
+          snmp-server traps syslog
+          snmp-server traps system
+          snmp-server traps ptp all-slaves-lost
+          snmp-server traps ptp clock-state-change phase-aligned
+          snmp-server traps ptp all-slaves-lost
+          snmp-server traps mpls traffic-eng cisco
+          snmp-server traps mpls traffic-eng UP
+          snmp-server traps mpls traffic-eng down
+          snmp-server traps mpls traffic-eng reoptimize
+          snmp-server traps mpls traffic-eng reroute
+          snmp-server traps rsvp all
+          snmp-server traps bfd
+          snmp-server traps l2vpn all
+          snmp-server traps isis all
+          snmp-server location ${rCustomSubnetUnderlay.az} 
+          snmp-server trap-source TenGigE0/0/0/0
+          !
+          snmp-server traps sensor
+          snmp-server traps fru-ctrl
+          !
+          interface Loopback0
+           description ... Used for Routing Protocols
+           ipv4 address ${LoopBackAddress}/32
+          !
+          interface TenGigE0/0/0/0
+           description ... Used for GRE
+           mtu 8450
+           ipv4 address ${rCustomSubnetUnderlay.FloatingIp} ${rCustomSubnetUnderlay.NetMask}
+           ipv4 address ${rCustomSubnetUnderlay.PrimaryIp} ${rCustomSubnetUnderlay.NetMask} secondary
+           ipv4 address ${rCustomSubnetUnderlay.SecondaryIp} ${rCustomSubnetUnderlay.NetMask} secondary
+           ipv4 address ${rCustomSubnetUnderlay.Secondary4} ${rCustomSubnetUnderlay.NetMask} secondary
+           ipv4 address ${rCustomSubnetUnderlay.Secondary5} ${rCustomSubnetUnderlay.NetMask} secondary
+           ipv4 address ${rCustomSubnetUnderlay.Secondary6} ${rCustomSubnetUnderlay.NetMask} secondary
+           ipv4 address ${rCustomSubnetUnderlay.Secondary7} ${rCustomSubnetUnderlay.NetMask} secondary
+           ipv4 address ${rCustomSubnetUnderlay.Secondary8} ${rCustomSubnetUnderlay.NetMask} secondary
+           no shut
+          !
+          router static
+          address-family ipv4 unicast
+            0.0.0.0/0 ${rCustomSubnetUnderlay.DefaultRoute}
+          !
+          bfd
+           echo disable
+           multipath include location 0/0/CPU0
+          !
+          router isis AWSDEMO
+           set-overload-bit on-startup 360
+           is-type level-2-only
+           net ${ISISNetID}
+           nsf ietf
+           log adjacency changes
+           lsp-refresh-interval 65000
+           max-lsp-lifetime 65535
+          !
+          address-family ipv4 unicast
+            metric-style wide
+            advertise passive-only
+            ispf level 2
+            mpls traffic-eng level-2-only
+            mpls traffic-eng router-id Loopback0
+            router-id Loopback0
+            segment-routing mpls
+          !
+          address-family ipv6 unicast
+           metric-style wide
+           advertise passive-only
+           router-id loopback0
+           interface Loopback0
+           passive
+           point-to-point
+           hello-padding sometimes
+          address-family ipv4 unicast
+            prefix-sid index ${PrefixSidIndex}
+          !
+          router bgp 398378
+           bgp router-id ${LoopBackAddress}
+           bfd minimum-interval 100
+           bfd multiplier 3
+           nsr
+           bgp log neighbor changes detail
+           bgp graceful-restart
+           address-family ipv4 unicast
+           allocate-label all
+           label mode per-vrf
+          !
+          address-family ipv6 unicast
+           allocate-label all
+           label mode per-vrf
+          !
+          address-family vpnv4 unicast
+           vrf all
+           label mode per-vrf
+          !
+          neighbor-group AWSDEMO-iBGP
+           description AWSDEMO iBGP
+           remote-as 398378
+           update-source Loopback0
+           address-family ipv4 unicast
+           address-family ipv6 unicast
+           address-family vpnv4 unicast
+          !
+          
+Outputs:
+  vRouterInstance:
+    Description: vRouterInstance
+    Value: !Ref vRTRInstance

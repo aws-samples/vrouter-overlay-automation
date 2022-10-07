@@ -1,0 +1,58 @@
+[
+    {
+        "ParameterKey": "vRouterInstance",
+        "ParameterValue": "Primary"
+    },
+    {
+        "ParameterKey": "InstanceTypeParam",
+        "ParameterValue": "t3.xlarge"
+    },
+    {
+        "ParameterKey": "SecurityGroupID",
+        "ParameterValue": "sg-071f512b2b9a0dd69"
+    },
+    {
+    	"ParameterKey": "VPC",
+    	"ParameterValue": "vpc-08974437d8feb6e5a"
+    },
+    {
+        "ParameterKey": "PrefixSidIndex",
+        "ParameterValue": "254"
+    },
+    {
+        "ParameterKey": "LoopBackAddress",
+        "ParameterValue": "10.255.10.254"
+    },
+    {
+        "ParameterKey": "ISISNetID",
+        "ParameterValue": "49.0101.0102.5500.0011.00"
+    },
+    {
+        "ParameterKey": "SubnetUnderlay",
+        "ParameterValue": "subnet-090795c3564c06d2c"
+    },
+    {
+        "ParameterKey": "KeyName",
+        "ParameterValue": "vRTR-DEMO"
+    },
+    {
+        "ParameterKey": "Loghost",
+        "ParameterValue": "172.16.33.68"
+    },
+    {
+        "ParameterKey": "DataCenterType",
+        "ParameterValue": "r"
+    },
+    {
+        "ParameterKey": "vRouterName",
+        "ParameterValue": "vRTR-DEMO-001"
+    },
+    {
+        "ParameterKey": "ImageID",
+        "ParameterValue": "ami-08e2d37b6a0129927"
+    },
+    {
+        "ParameterKey": "Environment",
+        "ParameterValue": "d"
+    }
+]
