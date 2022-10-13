@@ -1,0 +1,104 @@
+hostname vRTR-XRv9k-002
+username root
+ group root-lr
+ group cisco-support
+!
+call-home
+ service active
+ contact smart-licensing
+ profile CiscoTAC-1
+  active
+  destination transport-method http
+ !
+!
+interface Loopback0
+ ipv4 address 2.2.2.2 255.255.255.255
+ no shutdown
+!
+------------------------------------------------------------------------
+interface tunnel-ip10
+ ipv4 address 10.2.2.1 255.255.255.254
+ tunnel mode gre ipv4
+ tunnel source 172.31.83.222
+ tunnel destination 192.168.1.150
+ no shutdown
+!
+interface TenGigE0/0/0/0
+ ipv4 address 172.31.83.222 255.255.255.0
+ no shutdown
+!
+------------------------------------------------------------------------
+route-policy pass_all
+  pass
+end-policy
+!
+router static
+ address-family ipv4 unicast
+  0.0.0.0/0 172.31.83.1
+  192.168.96.0/24 tunnel-ip10
+ !
+!
+------------------------------------------------------------------------
+
+router isis 5G
+ is-type level-2-only
+ net 49.yyyy.yyyy.yyyy.yyyy.00
+ nsf ietf
+ log adjacency changes
+ lsp-refresh-interval 65000
+ max-lsp-lifetime 65535
+ address-family ipv4 unicast
+  metric-style wide
+  mpls traffic-eng level-2-only
+  mpls traffic-eng router-id Loopback0
+  router-id Loopback0
+  segment-routing mpls
+ !
+ address-family ipv6 unicast
+  metric-style wide
+  router-id Loopback0
+  single-topology
+ !
+ interface Loopback0
+  passive
+  point-to-point
+  csnp-interval 10
+  address-family ipv4 unicast
+   prefix-sid index 51yy
+  !
+  address-family ipv6 unicast
+  !
+ !
+ interface tunnel-ip10
+  bfd minimum-interval 150
+  bfd multiplier 3
+  point-to-point
+  hello-padding sometimes
+  address-family ipv4 unicast
+  !
+  address-family ipv6 unicast
+  !
+ !
+------------------------------------------------------------------------
+router bgp 65000
+ address-family ipv4 unicast
+  network 2.2.2.2/32
+ !
+ neighbor 1.1.1.1
+  remote-as 65001
+  ebgp-multihop 255
+  address-family ipv4 unicast
+   route-policy pass_all in
+   route-policy pass_all out
+  !
+ !
+!
+ssh server v2
+ssh server vrf default
+end
+
+
+
+
+
+

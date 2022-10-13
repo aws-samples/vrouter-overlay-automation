@@ -32,6 +32,7 @@ In order for Lambda Automation to dynamically attach to subnets the following su
 - lambda_deployment.yaml - Cloudformation to deploy lambda functions and required roles
 - lambda/GetIps/src/index.py - GetIP function source
 - lambda/vRouterInterfaces/src/index.py - vRouterInterfaces function source
+- sample_config/* - Sample router tunnel configurations for overlay
 
 # Installation
 
