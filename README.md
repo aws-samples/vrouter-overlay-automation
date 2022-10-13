@@ -9,7 +9,7 @@ to the tagged subnets discovered by a Lambda Function.
 - An existing VPC with appropriate routing configured for SSM reachability
 - An SSM bastion host that can access the VPC
 - An existing EC2 Keypair for initial root user SSH access
-- Access to an appropriate Cisco xRV9K AMI from Marketplace and license
+- Access to an appropriate Cisco xRV9K AMI from Marketplace and license: https://aws.amazon.com/marketplace/pp/prodview-ygifeqmzmkqja
 - An empty /28 subnet for each vRouter as the GRE Underlay Subnet
 - Additional subnets deployed as needed using the below defined tagging model for automatic attachement
 
@@ -75,23 +75,10 @@ select an instance type that meets your required number of interfaces and speed 
 common instance types. For production deployments it is recommended to disable HyperThreading on the instance deployment. The Cloudformation has
 Hyperthreading enabled to accomodate variable instnace types but commented out section for CPUOptions is there if standardizing on a common instance type.
 
+Cisco supported instance types on Marketplace are currently m5.24xlarge, m5n.24xlarge or c4.2xlarge.  
+
 MaxENI | MaxSpeed | Type     
 --- | --- | ---
-2 | Low to Moderate | t2.nano 
-2 | Low to Moderate | t2.micro
-3 | Low to Moderate | t2.small
-3 | Low to Moderate | t2.medium
-3 | Low to Moderate | t2.large
-3 | Moderate | t2.xlarge
-3 | Moderate | t2.2xlarge
-2 | Up to 5 Gigabit | t3.nano
-2 | Up to 5 Gigabit | t3.micro
-3 | Up to 5 Gigabit | t3.small
-3 | Up to 5 Gigabit | t3.medium
-3 | Up to 5 Gigabit | t3.small
-3 | Up to 5 Gigabit | t3.large
-4 | Up to 5 Gigabit | t3.xlarge
-4 | Up to 5 Gigabit | t3.2xlarge
 3 | Up to 10 Gigabit | c5.large
 4 | Up to 10 Gigabit | c5.xlarge
 4 | Up to 10 Gigabit | c5.2xlarge
