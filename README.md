@@ -115,7 +115,7 @@ MaxENI | MaxSpeed | Type
 15 | 100 Gigabit | m5n.metal 
 
 # Configuration
-In this section we are providing sample configuration for 2 vRouters. [vRTR-XRv9k-001] (sample_config/vRTR-XRv9k-001.txt) and [vRTR-XRv9k-002] (sample_config/vRTR-XRv9k-002.txt)
+In this section we are providing sample configuration for 2 vRouters. [vRTR-XRv9k-001](sample_config/vRTR-XRv9k-001.txt) and [vRTR-XRv9k-002](sample_config/vRTR-XRv9k-002.txt)
 
 This simple configuration has below configuration
 
