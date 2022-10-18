@@ -114,6 +114,17 @@ MaxENI | MaxSpeed | Type
 15 | 100 Gigabit | m5n.24xlarge
 15 | 100 Gigabit | m5n.metal 
 
+# Configuration
+In this section we are providing sample configuration for 2 vRouters. [vRTR-XRv9k-001] (sample_config/vRTR-XRv9k-001.txt) and [vRTR-XRv9k-002] (sample_config/vRTR-XRv9k-002.txt)
+
+This simple configuration has below configuration
+
+1. Loopback for these 2 vrouters are 172.31.0.1 & 172.31.0.2
+2. GRE tunnel IPs between 2 vrouters are 10.0.0.2 & 10.0.0.3. GRE Source for XRv9k-001 is 172.16.0.13 and XRv9k-002 is 172.16.0.30.
+3. Route Reflecter IP for both vRouter is 172.31.0.5 (RR configuration not covered)
+
+This configuration is just a sample and can differe by usecase and network design. 
+
 ## Security
 
 See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
