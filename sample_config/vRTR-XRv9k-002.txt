@@ -11,94 +11,81 @@ call-home
   destination transport-method http
  !
 !
-interface Loopback0
- ipv4 address 2.2.2.2 255.255.255.255
- no shutdown
-!
-------------------------------------------------------------------------
-interface tunnel-ip10
- ipv4 address 10.2.2.1 255.255.255.254
- tunnel mode gre ipv4
- tunnel source 172.31.83.222
- tunnel destination 192.168.1.150
- no shutdown
-!
-interface TenGigE0/0/0/0
- ipv4 address 172.31.83.222 255.255.255.0
- no shutdown
-!
-------------------------------------------------------------------------
-route-policy pass_all
-  pass
-end-policy
-!
-router static
- address-family ipv4 unicast
-  0.0.0.0/0 172.31.83.1
-  192.168.96.0/24 tunnel-ip10
- !
-!
-------------------------------------------------------------------------
+interface loopback 0
+  ipv4 address 172.31.0.2/32
+  ipv6 address 2605:c540:5fff::2/128
 
-router isis 5G
- is-type level-2-only
- net 49.yyyy.yyyy.yyyy.yyyy.00
- nsf ietf
- log adjacency changes
- lsp-refresh-interval 65000
- max-lsp-lifetime 65535
- address-family ipv4 unicast
+interface tunnel-ip1000
+ mtu 1500
+ description ... To PE1:Tunnel-ip1000
+ ipv4 address 10.0.0.3/31
+ ipv6 address 2605:c540:5fff:14::3/127
+ tunnel source 172.16.0.30
+ tunnel destination 172.16.0.14
+!
+router isis AWS
+is-type level-2-only
+net 49.0101.1720.3100.0002.00
+nsf ietf
+log adjacency changes
+!
+address-family ipv4 unicast
   metric-style wide
+  ispf level 2
   mpls traffic-eng level-2-only
   mpls traffic-eng router-id Loopback0
   router-id Loopback0
   segment-routing mpls
- !
- address-family ipv6 unicast
-  metric-style wide
-  router-id Loopback0
-  single-topology
- !
- interface Loopback0
+!
+address-family ipv6 unicast
+metric-style wide
+router-id Loopback0
+
+interface Loopback0
   passive
   point-to-point
-  csnp-interval 10
   address-family ipv4 unicast
-   prefix-sid index 51yy
+  prefix-sid index 2002
   !
   address-family ipv6 unicast
-  !
- !
- interface tunnel-ip10
-  bfd minimum-interval 150
-  bfd multiplier 3
+!
+interface tunnel-ip1000
   point-to-point
-  hello-padding sometimes
   address-family ipv4 unicast
-  !
+  !  
   address-family ipv6 unicast
-  !
- !
-------------------------------------------------------------------------
-router bgp 65000
+!
+
+router bgp 65001
+nsr
+bfd minimum-interval 100
+bfd multiplier 3
+bgp router-id 172.31.0.2
+bgp graceful-restart
+address-family ipv4 unicast
+ additional-paths receive
+ additional-paths send
+ allocate-label all
+!
+address-family vpnv4 unicast
+ additional-paths receive
+ additional-paths send
+ additional-paths selection route-policy ADD-PATH
+!
+address-family ipv6 unicast
+!
+neighbor-group AWS-iBGP
+ remote-as 65001
+ description AWS iBGP
+ update-source Loopback0
  address-family ipv4 unicast
-  network 2.2.2.2/32
  !
- neighbor 1.1.1.1
-  remote-as 65001
-  ebgp-multihop 255
-  address-family ipv4 unicast
-   route-policy pass_all in
-   route-policy pass_all out
-  !
+ address-family vpnv4 unicast
+ !
+ address-family ipv6 unicast
  !
 !
-ssh server v2
-ssh server vrf default
-end
-
-
-
-
-
-
+neighbor 172.31.0.5
+ use neighbor-group AWS-iBGP
+ description RR peering
+!
