@@ -42,6 +42,7 @@ In order for Lambda Automation to dynamically attach to subnets the following su
 3. aws s3 cp GetIps.zip s3://YOURBUCKETNAMEHERE/
 4. aws s3 cp vRouterInterfaces.zip s3://YOURBUCKETNAMEHERE/
 5. aws cloudformation create-stack --stack-name vRouter-Lambdas --template-body file://./lambda_deployment.yaml --parameters ParameterKey=pS3LambdaBucket,ParameterValue=YOURBUCKETNAMEHERE --capabilities CAPABILITY_IAM
+   * NOTE: Ensure you have pre-created your VPC infrastructure including seperate /28 Underlay subnets for ENI 0 and any additional subnets are created and tagged following the defined tagging model before deploying. 
 
 # Cloudformation Execution 
 1. Configure paramters in vRouter-SecurityGroup-Sample-Confg.json for Overlay security group
@@ -121,7 +122,7 @@ This simple configuration has below configuration
 
 1. Loopback for these 2 vrouters are 172.31.0.1 & 172.31.0.2
 2. GRE tunnel IPs between 2 vrouters are 10.0.0.2 & 10.0.0.3. GRE Source for XRv9k-001 is 172.16.0.13 and XRv9k-002 is 172.16.0.30.
-3. Route Reflecter IP for both vRouter is 172.31.0.5 (RR configuration not covered)
+3. Route Reflector IP for both vRouter is 172.31.0.5 (Route Reflector configuration not covered)
 
 This configuration is just a sample and can differe by usecase and network design. 
 
