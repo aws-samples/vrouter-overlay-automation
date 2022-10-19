@@ -42,6 +42,7 @@ In order for Lambda Automation to dynamically attach to subnets the following su
 3. aws s3 cp GetIps.zip s3://YOURBUCKETNAMEHERE/
 4. aws s3 cp vRouterInterfaces.zip s3://YOURBUCKETNAMEHERE/
 5. aws cloudformation create-stack --stack-name vRouter-Lambdas --template-body file://./lambda_deployment.yaml --parameters ParameterKey=pS3LambdaBucket,ParameterValue=YOURBUCKETNAMEHERE --capabilities CAPABILITY_IAM
+   * NOTE: Ensure you have pre-created your VPC infrastructure including seperate /28 Underlay subnets for ENI 0 and any additional subnets are created and tagged following the defined tagging model before deploying. 
 
 # Cloudformation Execution 
 1. Configure paramters in vRouter-SecurityGroup-Sample-Confg.json for Overlay security group
